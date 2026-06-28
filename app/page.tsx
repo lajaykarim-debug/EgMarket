@@ -2,7 +2,6 @@ import { Suspense } from 'react'
 import SearchBar from '@/components/SearchBar'
 import ListingCard from '@/components/ListingCard'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,14 +57,11 @@ function Skeleton() {
   )
 }
 
-export default async function Home({
+export default function Home({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string; category?: string; city?: string }>
 }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
   return (
     <main style={{ minHeight: '100vh', backgroundColor: '#F8F9FA' }}>
 
@@ -74,16 +70,9 @@ export default async function Home({
         <Link href="/" style={{ color: 'white', textDecoration: 'none', fontSize: '22px', fontWeight: 'bold' }}>
           🛒 EGMarket
         </Link>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <Link href={user ? "/perfil" : "/auth/sign-in"} style={{ color: 'white', fontSize: '20px', textDecoration: 'none' }}>
-            👤
-          </Link>
-          {!user && (
-            <Link href="/auth/sign-in" style={{ backgroundColor: '#F5A623', color: '#1A1A2E', padding: '8px 18px', borderRadius: '20px', fontWeight: 'bold', fontSize: '14px', textDecoration: 'none' }}>
-              Entrar
-            </Link>
-          )}
-        </div>
+        <Link href="/auth/sign-in" style={{ backgroundColor: '#F5A623', color: '#1A1A2E', padding: '8px 18px', borderRadius: '20px', fontWeight: 'bold', fontSize: '14px', textDecoration: 'none' }}>
+          Entrar
+        </Link>
       </nav>
 
       {/* HERO + BUSCADOR */}
