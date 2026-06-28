@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 
 interface Listing {
@@ -17,9 +18,9 @@ export default function ListingCard({ listing }: { listing: Listing }) {
   return (
     <Link href={`/listings/${listing.id}`} style={{ textDecoration: 'none' }}>
       <div style={{ backgroundColor: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer' }}>
-        <div style={{ aspectRatio: '1', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem' }}>
+        <div style={{ position: 'relative', aspectRatio: '1', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem' }}>
           {listing.photos?.[0]
-            ? <img src={listing.photos[0]} alt={listing.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ? <Image src={listing.photos[0]} alt={listing.title} fill style={{ objectFit: 'cover' }} unoptimized />
             : '📦'}
         </div>
         <div style={{ padding: '12px' }}>

@@ -1,9 +1,31 @@
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
+
+type Seller = {
+  full_name?: string | null
+  avatar_url?: string | null
+  city?: string | null
+  rating?: number | null
+}
+
+type ListingWithSeller = {
+  id: string
+  title: string
+  price: number
+  city: string
+  condition: string
+  photos?: string[] | null
+  description?: string | null
+  views?: number | null
+  category?: string | null
+  status?: string | null
+  profiles?: Seller | null
+}
 
 const conditionLabel: Record<string, string> = {
   nuevo: '🆕 Nuevo',
@@ -27,26 +49,27 @@ async function ListingDetail({ id }: { id: string }) {
     .from('listings')
     .select('*, profiles(full_name, avatar_url, city, rating)')
     .eq('id', id)
-    .single()
+    .single() as { data: ListingWithSeller | null; error: unknown }
 
   if (error || !listing) notFound()
+
+  const seller: Seller = listing.profiles ?? {}
 
   await supabase
     .from('listings')
     .update({ views: (listing.views || 0) + 1 })
     .eq('id', id)
 
-  const seller = listing.profiles as any
   const photos: string[] = listing.photos || []
 
   return (
     <div>
       {/* FOTOS */}
-      <div style={{ backgroundColor: '#1A1A2E', width: '100%', aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', backgroundColor: '#1A1A2E', width: '100%', aspectRatio: '1', overflow: 'hidden' }}>
         {photos.length > 0 ? (
-          <img src={photos[0]} alt={listing.title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          <Image src={photos[0]} alt={listing.title} fill style={{ objectFit: 'contain' }} unoptimized />
         ) : (
-          <span style={{ fontSize: '80px' }}>📦</span>
+          <span style={{ fontSize: '80px', position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>📦</span>
         )}
       </div>
 
