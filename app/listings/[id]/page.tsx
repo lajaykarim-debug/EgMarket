@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+export const dynamic = 'force-dynamic'
+
 const conditionLabel: Record<string, string> = {
   nuevo: '🆕 Nuevo',
   como_nuevo: '✨ Como nuevo',

@@ -3,6 +3,8 @@ import SearchBar from '@/components/SearchBar'
 import ListingCard from '@/components/ListingCard'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 const categories = ['Electrónica', 'Ropa', 'Hogar', 'Vehículos', 'Inmuebles', 'Otros']
 
 async function ListingsGrid({
