@@ -67,12 +67,17 @@ export default function Home({
 
       {/* NAVBAR */}
       <nav style={{ backgroundColor: '#006B3C', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ color: 'white', fontSize: '22px', fontWeight: 'bold' }}>
+        <Link href="/" style={{ color: 'white', textDecoration: 'none', fontSize: '22px', fontWeight: 'bold' }}>
           🛒 EGMarket
-        </span>
-        <Link href="/sign-in" style={{ backgroundColor: '#F5A623', color: '#1A1A2E', padding: '8px 18px', borderRadius: '20px', fontWeight: 'bold', fontSize: '14px', textDecoration: 'none' }}>
-          Entrar
         </Link>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <Link href="/perfil" style={{ color: 'white', fontSize: '20px', textDecoration: 'none' }}>
+            👤
+          </Link>
+          <Link href="/auth/sign-in" style={{ backgroundColor: '#F5A623', color: '#1A1A2E', padding: '8px 18px', borderRadius: '20px', fontWeight: 'bold', fontSize: '14px', textDecoration: 'none' }}>
+            Entrar
+          </Link>
+        </div>
       </nav>
 
       {/* HERO + BUSCADOR */}
