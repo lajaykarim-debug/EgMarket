@@ -7,9 +7,10 @@ import { createClient } from '@/lib/supabase/server'
 const categories = ['Electrónica', 'Ropa', 'Hogar', 'Vehículos', 'Inmuebles', 'Otros']
 
 async function ListingsGrid({
-  q, category, city
+  q, category, city, min, max, sort
 }: {
   q?: string; category?: string; city?: string
+  min?: string; max?: string; sort?: string
 }) {
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
@@ -18,12 +19,19 @@ async function ListingsGrid({
     .from('listings')
     .select('id, title, price, city, condition, photos')
     .eq('status', 'activo')
-    .order('created_at', { ascending: false })
-    .limit(20)
 
   if (q) query = query.ilike('title', `%${q}%`)
   if (category) query = query.eq('category', category)
   if (city) query = query.eq('city', city)
+  if (min) query = query.gte('price', parseInt(min))
+  if (max) query = query.lte('price', parseInt(max))
+
+  if (sort === 'precio_asc') query = query.order('price', { ascending: true })
+  else if (sort === 'precio_desc') query = query.order('price', { ascending: false })
+  else if (sort === 'vistas') query = query.order('views', { ascending: false })
+  else query = query.order('created_at', { ascending: false })
+
+  query = query.limit(20)
 
   const { data: listings } = await query
 
@@ -59,18 +67,17 @@ function Skeleton() {
 async function ListingsWithParams({
   searchParams
 }: {
-  searchParams: Promise<{ q?: string; category?: string; city?: string }>
+  searchParams: Promise<{ q?: string; category?: string; city?: string; min?: string; max?: string; sort?: string }>
 }) {
-  const { q, category, city } = await searchParams
-  return <ListingsGrid q={q} category={category} city={city} />
+  const { q, category, city, min, max, sort } = await searchParams
+  return <ListingsGrid q={q} category={category} city={city} min={min} max={max} sort={sort} />
 }
 
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; category?: string; city?: string }>
+  searchParams: Promise<{ q?: string; category?: string; city?: string; min?: string; max?: string; sort?: string }>
 }) {
-  // Detectar si hay sesión activa
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -83,12 +90,10 @@ export default async function Home({
           🛒 EGMarket
         </span>
         {user ? (
-          // Usuario logueado → mostrar botón perfil
           <Link href="/perfil" style={{ backgroundColor: '#F5A623', color: '#1A1A2E', padding: '8px 18px', borderRadius: '20px', fontWeight: 'bold', fontSize: '14px', textDecoration: 'none' }}>
             👤 Mi perfil
           </Link>
         ) : (
-          // No logueado → mostrar botón entrar
           <Link href="/auth/sign-in" style={{ backgroundColor: '#F5A623', color: '#1A1A2E', padding: '8px 18px', borderRadius: '20px', fontWeight: 'bold', fontSize: '14px', textDecoration: 'none' }}>
             Entrar
           </Link>
@@ -126,7 +131,7 @@ export default async function Home({
       </div>
 
       {/* BOTÓN FLOTANTE PUBLICAR */}
-      <Link href="/listings/nuevo" style={{
+      <Link href={user ? "/listings/nuevo" : "/auth/sign-in"} style={{
         position: 'fixed', bottom: '24px', right: '24px',
         backgroundColor: '#006B3C', color: 'white',
         padding: '16px 24px', borderRadius: '50px',
@@ -136,18 +141,6 @@ export default async function Home({
         zIndex: 100
       }}>
         + Publicar
-        {/* BOTÓN FLOTANTE PUBLICAR */}
-<Link href={user ? "/listings/nuevo" : "/auth/sign-in"} style={{
-  position: 'fixed', bottom: '24px', right: '24px',
-  backgroundColor: '#006B3C', color: 'white',
-  padding: '16px 24px', borderRadius: '50px',
-  fontWeight: 'bold', fontSize: '15px',
-  textDecoration: 'none',
-  boxShadow: '0 4px 20px rgba(0,107,60,0.4)',
-  zIndex: 100
-}}>
-  + Publicar
-</Link>
       </Link>
 
     </main>

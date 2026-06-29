@@ -1,11 +1,13 @@
 import Link from 'next/link'
 import { signIn } from './actions'
 
-export default function SignInPage({
+export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: { error?: string }
+  searchParams: Promise<{ error?: string }>
 }) {
+  const { error } = await searchParams
+
   return (
     <main style={{ minHeight: '100vh', backgroundColor: '#006B3C', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
 
@@ -30,7 +32,7 @@ export default function SignInPage({
         </div>
 
         {/* Error */}
-        {searchParams.error && (
+        {error && (
           <div style={{ backgroundColor: '#FEE2E2', border: '1px solid #FCA5A5', borderRadius: '10px', padding: '12px', marginBottom: '16px' }}>
             <p style={{ margin: 0, fontSize: '14px', color: '#DC2626' }}>
               ❌ Email o contraseña incorrectos

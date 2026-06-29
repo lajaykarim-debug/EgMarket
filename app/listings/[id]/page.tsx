@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import FavoriteButton from '@/components/FavoriteButton'
 
 type Seller = {
   full_name?: string | null
@@ -52,7 +53,6 @@ async function ListingDetail({ id }: { id: string }) {
 
   if (error || !listing) notFound()
 
-  // Detectar si el usuario actual es el vendedor
   const { data: { user } } = await supabase.auth.getUser()
   const isOwner = user?.id === listing.seller_id
 
@@ -79,15 +79,21 @@ async function ListingDetail({ id }: { id: string }) {
       {/* CONTENIDO */}
       <div style={{ padding: '20px 16px', maxWidth: '600px', margin: '0 auto' }}>
 
-        <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: '#1A1A2E', margin: '0 0 8px' }}>
-          {listing.title}
-        </h1>
-        <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#006B3C', margin: '0 0 16px' }}>
-          {formatPrice(listing.price)}
-        </p>
+        {/* Título, precio y favorito */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+          <div style={{ flex: 1, marginRight: '12px' }}>
+            <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: '#1A1A2E', margin: '0 0 8px' }}>
+              {listing.title}
+            </h1>
+            <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#006B3C', margin: 0 }}>
+              {formatPrice(listing.price)}
+            </p>
+          </div>
+          {!isOwner && <FavoriteButton listingId={listing.id} />}
+        </div>
 
         {/* Badges */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', margin: '16px 0 20px' }}>
           <span style={badgeStyle('#E8F5EE', '#006B3C')}>{conditionLabel[listing.condition] || listing.condition}</span>
           <span style={badgeStyle('#EEF2FF', '#4338CA')}>📂 {listing.category}</span>
           <span style={badgeStyle('#FFF7ED', '#C2410C')}>📍 {listing.city}</span>
@@ -116,14 +122,14 @@ async function ListingDetail({ id }: { id: string }) {
           </div>
         </div>
 
-        {/* Aviso */}
+        {/* Aviso seguridad */}
         <div style={{ backgroundColor: '#FFFBEB', border: '1px solid #F5A623', borderRadius: '12px', padding: '14px', marginBottom: '24px' }}>
           <p style={{ margin: 0, fontSize: '13px', color: '#92400E' }}>
             ⚠️ <strong>Consejo de seguridad:</strong> Queda siempre en un lugar público. Nunca envíes dinero por adelantado.
           </p>
         </div>
 
-        {/* Botón editar — solo visible para el vendedor */}
+        {/* Botón editar — solo para el vendedor */}
         {isOwner && (
           <Link
             href={`/listings/${listing.id}/editar`}
@@ -133,7 +139,7 @@ async function ListingDetail({ id }: { id: string }) {
           </Link>
         )}
 
-        {/* Botón WhatsApp — solo visible para otros usuarios */}
+        {/* Botón WhatsApp — solo para otros */}
         {!isOwner && (
           <a
             href={`https://wa.me/?text=Hola, me interesa tu anuncio en EGMarket: ${listing.title} - ${formatPrice(listing.price)}`}

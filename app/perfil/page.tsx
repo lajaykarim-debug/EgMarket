@@ -31,19 +31,22 @@ export default async function PerfilPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/sign-in')
 
-  // Obtener perfil
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single()
 
-  // Obtener anuncios del usuario
   const { data: listings } = await supabase
     .from('listings')
     .select('id, title, price, status, photos, created_at')
     .eq('seller_id', user.id)
     .order('created_at', { ascending: false })
+
+  const { count: favoritesCount } = await supabase
+    .from('favorites')
+    .select('id', { count: 'exact' })
+    .eq('user_id', user.id)
 
   return (
     <main style={{ minHeight: '100vh', backgroundColor: '#F8F9FA' }}>
@@ -85,6 +88,28 @@ export default async function PerfilPage() {
               📍 {profile.city}
             </p>
           )}
+
+          {/* Stats */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #f3f4f6' }}>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ margin: 0, fontWeight: '700', fontSize: '20px', color: '#1A1A2E' }}>{listings?.length || 0}</p>
+              <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#9CA3AF' }}>Anuncios</p>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ margin: 0, fontWeight: '700', fontSize: '20px', color: '#1A1A2E' }}>{favoritesCount || 0}</p>
+              <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#9CA3AF' }}>Favoritos</p>
+            </div>
+          </div>
+        </div>
+
+        {/* ACCESOS RÁPIDOS */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
+          <Link href="/listings/nuevo" style={{ backgroundColor: '#006B3C', color: 'white', padding: '16px', borderRadius: '16px', textDecoration: 'none', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}>
+            ➕ Publicar anuncio
+          </Link>
+          <Link href="/favoritos" style={{ backgroundColor: '#FEE2E2', color: '#EF4444', padding: '16px', borderRadius: '16px', textDecoration: 'none', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}>
+            ❤️ Mis favoritos
+          </Link>
         </div>
 
         {/* FORMULARIO EDITAR PERFIL */}
@@ -96,29 +121,16 @@ export default async function PerfilPage() {
           <form action={updateProfile}>
             <input type="hidden" name="current_avatar" value={profile?.avatar_url || ''} />
 
-            {/* Nombre */}
             <div style={{ marginBottom: '16px' }}>
               <label style={label}>Nombre completo</label>
-              <input
-                name="full_name"
-                defaultValue={profile?.full_name || ''}
-                placeholder="Tu nombre completo"
-                style={field}
-              />
+              <input name="full_name" defaultValue={profile?.full_name || ''} placeholder="Tu nombre completo" style={field} />
             </div>
 
-            {/* Teléfono */}
             <div style={{ marginBottom: '16px' }}>
               <label style={label}>Teléfono</label>
-              <input
-                name="phone"
-                defaultValue={profile?.phone || ''}
-                placeholder="+240 222 000 000"
-                style={field}
-              />
+              <input name="phone" defaultValue={profile?.phone || ''} placeholder="+240 222 000 000" style={field} />
             </div>
 
-            {/* Ciudad */}
             <div style={{ marginBottom: '16px' }}>
               <label style={label}>Ciudad</label>
               <select name="city" style={field} defaultValue={profile?.city || ''}>
@@ -129,21 +141,12 @@ export default async function PerfilPage() {
               </select>
             </div>
 
-            {/* Foto de perfil */}
             <div style={{ marginBottom: '24px' }}>
               <label style={label}>Foto de perfil</label>
-              <input
-                name="avatar"
-                type="file"
-                accept="image/*"
-                style={{ fontSize: '14px', color: '#374151' }}
-              />
+              <input name="avatar" type="file" accept="image/*" style={{ fontSize: '14px', color: '#374151' }} />
             </div>
 
-            <button
-              type="submit"
-              style={{ width: '100%', backgroundColor: '#006B3C', color: 'white', padding: '14px', borderRadius: '12px', border: 'none', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer' }}
-            >
+            <button type="submit" style={{ width: '100%', backgroundColor: '#006B3C', color: 'white', padding: '14px', borderRadius: '12px', border: 'none', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer' }}>
               Guardar cambios
             </button>
           </form>
@@ -165,14 +168,12 @@ export default async function PerfilPage() {
               {listings.map((listing) => (
                 <Link key={listing.id} href={`/listings/${listing.id}`} style={{ textDecoration: 'none' }}>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '12px', borderRadius: '12px', border: '1px solid #f3f4f6', backgroundColor: '#FAFAFA' }}>
-                    {/* Miniatura */}
                     <div style={{ width: '56px', height: '56px', borderRadius: '10px', backgroundColor: '#e5e7eb', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
                       {listing.photos?.[0]
                         ? <img src={listing.photos[0]} alt={listing.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         : '📦'
                       }
                     </div>
-                    {/* Info */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ margin: 0, fontWeight: '600', color: '#1A1A2E', fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {listing.title}
@@ -181,7 +182,6 @@ export default async function PerfilPage() {
                         {new Intl.NumberFormat('es-ES').format(listing.price)} XAF
                       </p>
                     </div>
-                    {/* Estado */}
                     <span style={{
                       padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '600', flexShrink: 0,
                       backgroundColor: listing.status === 'activo' ? '#E8F5EE' : '#F3F4F6',
