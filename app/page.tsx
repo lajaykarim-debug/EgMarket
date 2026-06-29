@@ -2,8 +2,7 @@ import { Suspense } from 'react'
 import SearchBar from '@/components/SearchBar'
 import ListingCard from '@/components/ListingCard'
 import Link from 'next/link'
-
-export const dynamic = 'force-dynamic'
+import { createClient } from '@/lib/supabase/server'
 
 const categories = ['Electrónica', 'Ropa', 'Hogar', 'Vehículos', 'Inmuebles', 'Otros']
 
@@ -57,22 +56,43 @@ function Skeleton() {
   )
 }
 
-export default function Home({
+async function ListingsWithParams({
+  searchParams
+}: {
+  searchParams: Promise<{ q?: string; category?: string; city?: string }>
+}) {
+  const { q, category, city } = await searchParams
+  return <ListingsGrid q={q} category={category} city={city} />
+}
+
+export default async function Home({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string; category?: string; city?: string }>
 }) {
+  // Detectar si hay sesión activa
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   return (
     <main style={{ minHeight: '100vh', backgroundColor: '#F8F9FA' }}>
 
       {/* NAVBAR */}
       <nav style={{ backgroundColor: '#006B3C', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link href="/" style={{ color: 'white', textDecoration: 'none', fontSize: '22px', fontWeight: 'bold' }}>
+        <span style={{ color: 'white', fontSize: '22px', fontWeight: 'bold' }}>
           🛒 EGMarket
-        </Link>
-        <Link href="/auth/sign-in" style={{ backgroundColor: '#F5A623', color: '#1A1A2E', padding: '8px 18px', borderRadius: '20px', fontWeight: 'bold', fontSize: '14px', textDecoration: 'none' }}>
-          Entrar
-        </Link>
+        </span>
+        {user ? (
+          // Usuario logueado → mostrar botón perfil
+          <Link href="/perfil" style={{ backgroundColor: '#F5A623', color: '#1A1A2E', padding: '8px 18px', borderRadius: '20px', fontWeight: 'bold', fontSize: '14px', textDecoration: 'none' }}>
+            👤 Mi perfil
+          </Link>
+        ) : (
+          // No logueado → mostrar botón entrar
+          <Link href="/auth/sign-in" style={{ backgroundColor: '#F5A623', color: '#1A1A2E', padding: '8px 18px', borderRadius: '20px', fontWeight: 'bold', fontSize: '14px', textDecoration: 'none' }}>
+            Entrar
+          </Link>
+        )}
       </nav>
 
       {/* HERO + BUSCADOR */}
@@ -96,7 +116,7 @@ export default function Home({
       </div>
 
       {/* ANUNCIOS */}
-      <div style={{ padding: '0 16px 32px' }}>
+      <div style={{ padding: '0 16px 100px' }}>
         <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#1A1A2E', marginBottom: '16px' }}>
           Anuncios recientes
         </h2>
@@ -105,7 +125,7 @@ export default function Home({
         </Suspense>
       </div>
 
-      {/* BOTÓN FLOTANTE */}
+      {/* BOTÓN FLOTANTE PUBLICAR */}
       <Link href="/listings/nuevo" style={{
         position: 'fixed', bottom: '24px', right: '24px',
         backgroundColor: '#006B3C', color: 'white',
@@ -120,13 +140,4 @@ export default function Home({
 
     </main>
   )
-}
-
-async function ListingsWithParams({
-  searchParams
-}: {
-  searchParams: Promise<{ q?: string; category?: string; city?: string }>
-}) {
-  const { q, category, city } = await searchParams
-  return <ListingsGrid q={q} category={category} city={city} />
 }

@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { updateProfile, signOut } from './actions'
-import Image from 'next/image'
 import Link from 'next/link'
 
 const CITIES = ['Malabo', 'Bata', 'Mongomo', 'Ebebiyín', 'Oyala', 'Otra']
@@ -66,9 +65,9 @@ export default async function PerfilPage() {
 
         {/* AVATAR Y EMAIL */}
         <div style={{ backgroundColor: 'white', borderRadius: '20px', padding: '24px', marginBottom: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', textAlign: 'center' }}>
-          <div style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#006B3C', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', overflow: 'hidden' }}>
+          <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#006B3C', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', overflow: 'hidden' }}>
             {profile?.avatar_url ? (
-              <Image src={profile.avatar_url} alt="Avatar" fill style={{ objectFit: 'cover' }} unoptimized />
+              <img src={profile.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
               <span style={{ color: 'white', fontSize: '32px', fontWeight: 'bold' }}>
                 {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '?'}
@@ -169,7 +168,7 @@ export default async function PerfilPage() {
                     {/* Miniatura */}
                     <div style={{ width: '56px', height: '56px', borderRadius: '10px', backgroundColor: '#e5e7eb', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
                       {listing.photos?.[0]
-                        ? <Image src={listing.photos[0]} alt={listing.title} fill style={{ objectFit: 'cover' }} unoptimized />
+                        ? <img src={listing.photos[0]} alt={listing.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         : '📦'
                       }
                     </div>
