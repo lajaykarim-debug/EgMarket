@@ -136,6 +136,18 @@ export default async function Home({
         zIndex: 100
       }}>
         + Publicar
+        {/* BOTÓN FLOTANTE PUBLICAR */}
+<Link href={user ? "/listings/nuevo" : "/auth/sign-in"} style={{
+  position: 'fixed', bottom: '24px', right: '24px',
+  backgroundColor: '#006B3C', color: 'white',
+  padding: '16px 24px', borderRadius: '50px',
+  fontWeight: 'bold', fontSize: '15px',
+  textDecoration: 'none',
+  boxShadow: '0 4px 20px rgba(0,107,60,0.4)',
+  zIndex: 100
+}}>
+  + Publicar
+</Link>
       </Link>
 
     </main>

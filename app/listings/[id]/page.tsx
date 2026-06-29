@@ -4,8 +4,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-export const dynamic = 'force-dynamic'
-
 type Seller = {
   full_name?: string | null
   avatar_url?: string | null
@@ -24,6 +22,7 @@ type ListingWithSeller = {
   views?: number | null
   category?: string | null
   status?: string | null
+  seller_id?: string | null
   profiles?: Seller | null
 }
 
@@ -52,6 +51,10 @@ async function ListingDetail({ id }: { id: string }) {
     .single() as { data: ListingWithSeller | null; error: unknown }
 
   if (error || !listing) notFound()
+
+  // Detectar si el usuario actual es el vendedor
+  const { data: { user } } = await supabase.auth.getUser()
+  const isOwner = user?.id === listing.seller_id
 
   const seller: Seller = listing.profiles ?? {}
 
@@ -120,15 +123,27 @@ async function ListingDetail({ id }: { id: string }) {
           </p>
         </div>
 
-        {/* Botones */}
-        <a
-          href={`https://wa.me/?text=Hola, me interesa tu anuncio en EGMarket: ${listing.title} - ${formatPrice(listing.price)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ display: 'block', width: '100%', backgroundColor: '#25D366', color: 'white', padding: '16px', borderRadius: '14px', border: 'none', fontSize: '16px', fontWeight: 'bold', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box', marginBottom: '12px' }}
-        >
-          💬 Contactar por WhatsApp
-        </a>
+        {/* Botón editar — solo visible para el vendedor */}
+        {isOwner && (
+          <Link
+            href={`/listings/${listing.id}/editar`}
+            style={{ display: 'block', width: '100%', backgroundColor: '#F5A623', color: '#1A1A2E', padding: '14px', borderRadius: '14px', fontSize: '15px', fontWeight: 'bold', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box', marginBottom: '12px' }}
+          >
+            ✏️ Editar anuncio
+          </Link>
+        )}
+
+        {/* Botón WhatsApp — solo visible para otros usuarios */}
+        {!isOwner && (
+          <a
+            href={`https://wa.me/?text=Hola, me interesa tu anuncio en EGMarket: ${listing.title} - ${formatPrice(listing.price)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: 'block', width: '100%', backgroundColor: '#25D366', color: 'white', padding: '16px', borderRadius: '14px', border: 'none', fontSize: '16px', fontWeight: 'bold', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box', marginBottom: '12px' }}
+          >
+            💬 Contactar por WhatsApp
+          </a>
+        )}
 
         <Link href="/"
           style={{ display: 'block', width: '100%', backgroundColor: 'white', color: '#006B3C', padding: '14px', borderRadius: '14px', border: '2px solid #006B3C', fontSize: '15px', fontWeight: '600', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box' }}
