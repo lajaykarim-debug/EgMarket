@@ -25,7 +25,12 @@ const label: React.CSSProperties = {
   marginBottom: '6px',
 }
 
-export default async function PerfilPage() {
+export default async function PerfilPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ incompleto?: string }>
+}) {
+  const { incompleto } = await searchParams
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -48,6 +53,8 @@ export default async function PerfilPage() {
     .select('id', { count: 'exact' })
     .eq('user_id', user.id)
 
+  const perfilCompleto = profile?.full_name && profile?.phone && profile?.city
+
   return (
     <main style={{ minHeight: '100vh', backgroundColor: '#F8F9FA' }}>
 
@@ -66,6 +73,40 @@ export default async function PerfilPage() {
 
       <div style={{ maxWidth: '600px', margin: '0 auto', padding: '24px 16px' }}>
 
+        {/* AVISO PERFIL INCOMPLETO */}
+        {(incompleto || !perfilCompleto) && (
+          <div style={{ backgroundColor: '#FEF3C7', border: '2px solid #F5A623', borderRadius: '16px', padding: '16px', marginBottom: '24px' }}>
+            <p style={{ margin: '0 0 8px', fontWeight: '700', color: '#92400E', fontSize: '15px' }}>
+              ⚠️ Completa tu perfil para publicar anuncios
+            </p>
+            <p style={{ margin: 0, fontSize: '13px', color: '#92400E' }}>
+              Para reducir fraudes y generar confianza, necesitas añadir tu <strong>nombre completo</strong>, <strong>teléfono</strong> y <strong>ciudad</strong> antes de publicar.
+            </p>
+            <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '13px', padding: '4px 10px', borderRadius: '20px', backgroundColor: profile?.full_name ? '#D1FAE5' : '#FEE2E2', color: profile?.full_name ? '#065F46' : '#DC2626', fontWeight: '600' }}>
+                {profile?.full_name ? '✅' : '❌'} Nombre
+              </span>
+              <span style={{ fontSize: '13px', padding: '4px 10px', borderRadius: '20px', backgroundColor: profile?.phone ? '#D1FAE5' : '#FEE2E2', color: profile?.phone ? '#065F46' : '#DC2626', fontWeight: '600' }}>
+                {profile?.phone ? '✅' : '❌'} Teléfono
+              </span>
+              <span style={{ fontSize: '13px', padding: '4px 10px', borderRadius: '20px', backgroundColor: profile?.city ? '#D1FAE5' : '#FEE2E2', color: profile?.city ? '#065F46' : '#DC2626', fontWeight: '600' }}>
+                {profile?.city ? '✅' : '❌'} Ciudad
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* PERFIL COMPLETO — badge verde */}
+        {perfilCompleto && !incompleto && (
+          <div style={{ backgroundColor: '#D1FAE5', border: '2px solid #006B3C', borderRadius: '16px', padding: '14px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '24px' }}>✅</span>
+            <div>
+              <p style={{ margin: 0, fontWeight: '700', color: '#065F46', fontSize: '14px' }}>Perfil verificado</p>
+              <p style={{ margin: 0, fontSize: '12px', color: '#065F46' }}>Tu perfil está completo. Puedes publicar anuncios.</p>
+            </div>
+          </div>
+        )}
+
         {/* AVATAR Y EMAIL */}
         <div style={{ backgroundColor: 'white', borderRadius: '20px', padding: '24px', marginBottom: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', textAlign: 'center' }}>
           <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#006B3C', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', overflow: 'hidden' }}>
@@ -79,15 +120,11 @@ export default async function PerfilPage() {
           </div>
           <p style={{ margin: 0, fontWeight: '600', color: '#1A1A2E', fontSize: '16px' }}>
             {profile?.full_name || 'Sin nombre'}
+            {perfilCompleto && <span style={{ marginLeft: '6px', fontSize: '14px' }}>✅</span>}
           </p>
-          <p style={{ margin: '4px 0 0', color: '#9CA3AF', fontSize: '13px' }}>
-            {user.email}
-          </p>
-          {profile?.city && (
-            <p style={{ margin: '4px 0 0', color: '#006B3C', fontSize: '13px' }}>
-              📍 {profile.city}
-            </p>
-          )}
+          <p style={{ margin: '4px 0 0', color: '#9CA3AF', fontSize: '13px' }}>{user.email}</p>
+          {profile?.city && <p style={{ margin: '4px 0 0', color: '#006B3C', fontSize: '13px' }}>📍 {profile.city}</p>}
+          {profile?.phone && <p style={{ margin: '4px 0 0', color: '#6B7280', fontSize: '13px' }}>📞 {profile.phone}</p>}
 
           {/* Stats */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #f3f4f6' }}>
@@ -104,7 +141,7 @@ export default async function PerfilPage() {
 
         {/* ACCESOS RÁPIDOS */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
-          <Link href="/listings/nuevo" style={{ backgroundColor: '#006B3C', color: 'white', padding: '16px', borderRadius: '16px', textDecoration: 'none', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}>
+          <Link href="/listings/nuevo" style={{ backgroundColor: perfilCompleto ? '#006B3C' : '#9CA3AF', color: 'white', padding: '16px', borderRadius: '16px', textDecoration: 'none', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}>
             ➕ Publicar anuncio
           </Link>
           <Link href="/favoritos" style={{ backgroundColor: '#FEE2E2', color: '#EF4444', padding: '16px', borderRadius: '16px', textDecoration: 'none', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}>
@@ -122,18 +159,18 @@ export default async function PerfilPage() {
             <input type="hidden" name="current_avatar" value={profile?.avatar_url || ''} />
 
             <div style={{ marginBottom: '16px' }}>
-              <label style={label}>Nombre completo</label>
-              <input name="full_name" defaultValue={profile?.full_name || ''} placeholder="Tu nombre completo" style={field} />
+              <label style={label}>Nombre completo *</label>
+              <input name="full_name" required defaultValue={profile?.full_name || ''} placeholder="Tu nombre completo" style={field} />
             </div>
 
             <div style={{ marginBottom: '16px' }}>
-              <label style={label}>Teléfono</label>
-              <input name="phone" defaultValue={profile?.phone || ''} placeholder="+240 222 000 000" style={field} />
+              <label style={label}>Teléfono *</label>
+              <input name="phone" required defaultValue={profile?.phone || ''} placeholder="+240 222 000 000" style={field} />
             </div>
 
             <div style={{ marginBottom: '16px' }}>
-              <label style={label}>Ciudad</label>
-              <select name="city" style={field} defaultValue={profile?.city || ''}>
+              <label style={label}>Ciudad *</label>
+              <select name="city" required style={field} defaultValue={profile?.city || ''}>
                 <option value="">Seleccionar ciudad...</option>
                 {CITIES.map((c) => (
                   <option key={c} value={c}>{c}</option>

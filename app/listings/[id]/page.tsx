@@ -1,9 +1,9 @@
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
-import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import FavoriteButton from '@/components/FavoriteButton'
+import PhotoGallery from '@/components/PhotoGallery'
 
 type Seller = {
   full_name?: string | null
@@ -67,14 +67,8 @@ async function ListingDetail({ id }: { id: string }) {
 
   return (
     <div>
-      {/* FOTOS */}
-      <div style={{ position: 'relative', backgroundColor: '#1A1A2E', width: '100%', aspectRatio: '1', overflow: 'hidden' }}>
-        {photos.length > 0 ? (
-          <Image src={photos[0]} alt={listing.title} fill style={{ objectFit: 'contain' }} unoptimized />
-        ) : (
-          <span style={{ fontSize: '80px', position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>📦</span>
-        )}
-      </div>
+      {/* GALERÍA DE FOTOS */}
+      <PhotoGallery photos={photos} title={listing.title} />
 
       {/* CONTENIDO */}
       <div style={{ padding: '20px 16px', maxWidth: '600px', margin: '0 auto' }}>
